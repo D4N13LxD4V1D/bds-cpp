@@ -6,10 +6,16 @@
 
 #include <memory>
 #include <variant>
+#include <vector>
 
 #include <llvm/IR/Value.h>
 
 struct Compiler {
+  auto compile(std::vector<std::unique_ptr<Stmt>> statements) -> void;
+
+  auto codegen(const Expr &expr) -> llvm::Value *;
+  auto codegen(const Stmt &stmt) -> llvm::Value *;
+
   auto codegen(const Expr::Assign &expr) -> llvm::Value *;
   auto codegen(const Expr::Binary &expr) -> llvm::Value *;
   auto codegen(const Expr::Call &expr) -> llvm::Value *;
@@ -31,8 +37,6 @@ struct Compiler {
   auto codegen(const Stmt::Return &stmt) -> llvm::Value *;
   auto codegen(const Stmt::Var &stmt) -> llvm::Value *;
   auto codegen(const Stmt::While &stmt) -> llvm::Value *;
-
-  auto compile(std::vector<std::unique_ptr<Stmt>> statements) -> void;
 };
 
 #endif // CODEGEN_HPP

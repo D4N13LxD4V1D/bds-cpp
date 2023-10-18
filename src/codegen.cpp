@@ -8,6 +8,14 @@ auto Compiler::compile(std::vector<std::unique_ptr<Stmt>> statements) -> void {
   }
 }
 
+auto Compiler::codegen(const Expr &expr) -> llvm::Value * {
+  return expr.accept([this](const auto &e) { return codegen(e); });
+}
+
+auto Compiler::codegen(const Stmt &stmt) -> llvm::Value * {
+  return stmt.accept([this](const auto &s) { return codegen(s); });
+}
+
 auto Compiler::codegen(const Expr::Assign &expr) -> llvm::Value * {
   return nullptr;
 }

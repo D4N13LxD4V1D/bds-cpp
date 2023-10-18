@@ -115,7 +115,8 @@ struct Expr {
   Expr(Unary expr) : expr(std::move(expr)) {}
   Expr(Variable expr) : expr(std::move(expr)) {}
 
-  auto accept(auto &visitor) -> decltype(std::visit(visitor, expr)) {
+  auto accept(const auto &visitor) const
+      -> decltype(std::visit(visitor, expr)) {
     return std::visit(visitor, expr);
   }
 
