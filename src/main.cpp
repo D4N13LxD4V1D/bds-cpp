@@ -1,6 +1,6 @@
+#include <codegen.hpp>
 #include <lexer.hpp>
 #include <parser.hpp>
-#include <printer.hpp>
 
 #include <fstream>
 #include <iostream>
@@ -25,8 +25,8 @@ int main(int argc, const char *argv[]) {
     Parser parser(argv[1], lexer.tokens);
     parser.parseTokens();
 
-    Printer printer;
-    printer.print(std::move(parser.statements));
+    Compiler compiler;
+    compiler.compile(std::move(parser.statements));
   } else {
     std::cout << "Usage: bds [script]" << std::endl;
     exit(64);
