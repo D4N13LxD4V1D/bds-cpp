@@ -12,6 +12,6 @@ enum class Error {
   TooManyArguments,
 };
 
-void error(Error type, const std::string args[]);
+auto error(Error type, const std::string args[]) -> void;
 
 #endif // ERROR_HPP

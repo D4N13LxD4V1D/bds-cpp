@@ -12,27 +12,27 @@
 class Lexer {
   std::string_view filename;
   std::string_view source;
+  std::vector<Token> tokens;
 
   int start = 0;
   int current = 0;
   int row = 1;
   int column = 1;
 
-  bool isAtEnd();
-  char advance();
-  char peek();
-  char peekNext();
-  std::string getline();
-  std::string getline(int n);
-  void addToken(Token::Type type, std::string_view lexeme);
-  void scanToken();
+  auto isAtEnd() -> bool;
+  auto advance() -> char;
+  auto peek() -> char;
+  auto peekNext() -> char;
+  auto getline() -> std::string;
+  auto getline(int n) -> std::string;
+  auto addToken(Token::Type type, std::string_view lexeme) -> void;
+  auto scanToken() -> void;
 
 public:
-  std::vector<Token> tokens;
 
   Lexer(std::string_view filename, std::string_view source);
 
-  void scanTokens();
+  auto scanTokens() -> std::vector<Token>;
 };
 
 #endif // LEXER_HPP

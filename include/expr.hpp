@@ -119,7 +119,7 @@ struct Expr {
     return std::visit(visitor, expr);
   }
 
-  template <class T> T *get() { return &std::get<T>(expr); }
+  template <class T> auto get() -> T * { return &std::get<T>(expr); }
 };
 
 #endif // EXPR_HPP

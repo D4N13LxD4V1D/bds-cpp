@@ -4,7 +4,7 @@
 #include <format>
 #include <iostream>
 
-void error(Error type, const std::string args[]) {
+auto error(Error type, const std::string args[]) -> void {
   std::cout << "\033[1;31mError:\033[0m ";
   switch (type) {
   case Error::UnterminatedString:

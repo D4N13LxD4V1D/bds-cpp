@@ -39,17 +39,19 @@ Lexer::Lexer(std::string_view filename, std::string_view source)
   tokens = std::vector<Token>();
 }
 
-void Lexer::scanTokens() {
+auto Lexer::scanTokens() -> std::vector<Token> {
   while (!isAtEnd()) {
     start = current;
     scanToken();
   }
   addToken(Token::Type::END, "EOF");
+
+  return tokens;
 }
 
-bool Lexer::isAtEnd() { return current >= source.size(); }
+auto Lexer::isAtEnd() -> bool { return current >= source.size(); }
 
-char Lexer::advance() {
+auto Lexer::advance() -> char {
   if (isAtEnd())
     return '\0';
   current++;
@@ -57,21 +59,21 @@ char Lexer::advance() {
   return source[current - 1];
 }
 
-char Lexer::peek() {
+auto Lexer::peek() -> char {
   if (isAtEnd())
     return '\0';
   return source[current];
 }
 
-char Lexer::peekNext() {
+auto Lexer::peekNext() -> char {
   if (current + 1 >= source.size())
     return '\0';
   return source[current + 1];
 }
 
-std::string Lexer::getline() { return getline(row); }
+auto Lexer::getline() -> std::string { return getline(row); }
 
-std::string Lexer::getline(int n) {
+auto Lexer::getline(int n) -> std::string {
   int line = 1;
   int start = 0;
   int end = 0;
@@ -93,11 +95,11 @@ std::string Lexer::getline(int n) {
   return std::string{source.substr(start, end - start)};
 }
 
-void Lexer::addToken(Token::Type type, std::string_view lexeme) {
+auto Lexer::addToken(Token::Type type, std::string_view lexeme) -> void {
   tokens.push_back(Token{type, std::string{lexeme}, row, column});
 }
 
-void Lexer::scanToken() {
+auto Lexer::scanToken() -> void {
   std::string possibleDoubleToken{peek(), peekNext()};
   if (doubleTokens.find(possibleDoubleToken) != doubleTokens.end()) {
     current += 2;

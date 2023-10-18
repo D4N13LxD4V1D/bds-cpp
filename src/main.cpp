@@ -5,7 +5,7 @@
 #include <fstream>
 #include <iostream>
 
-int main(int argc, const char *argv[]) {
+auto main(int argc, const char *argv[]) -> int {
   if (argc == 1) {
     std::cout << "Usage: bds [script]" << std::endl;
     exit(64);
@@ -20,13 +20,13 @@ int main(int argc, const char *argv[]) {
                        std::istreambuf_iterator<char>()};
 
     Lexer lexer(argv[1], source);
-    lexer.scanTokens();
+    auto tokens = lexer.scanTokens();
 
-    Parser parser(argv[1], lexer.tokens);
-    parser.parseTokens();
+    Parser parser(argv[1], tokens);
+    auto statements = parser.parseTokens();
 
     Compiler compiler;
-    compiler.compile(std::move(parser.statements));
+    compiler.compile(std::move(statements));
   } else {
     std::cout << "Usage: bds [script]" << std::endl;
     exit(64);

@@ -1,47 +1,89 @@
 #include <codegen.hpp>
 
-void Compiler::compile(std::vector<std::unique_ptr<Stmt>> statements) {
+#include <iostream>
+
+auto Compiler::compile(std::vector<std::unique_ptr<Stmt>> statements) -> void {
   for (const auto &stmt : statements) {
     stmt->accept([this](const auto &s) { codegen(s); });
   }
 }
 
-llvm::Value *Compiler::codgen(const Expr::Assign &expr) { return nullptr; }
+auto Compiler::codegen(const Expr::Assign &expr) -> llvm::Value * {
+  return nullptr;
+}
 
-llvm::Value *Compiler::codgen(const Expr::Binary &expr) { return nullptr; }
+auto Compiler::codegen(const Expr::Binary &expr) -> llvm::Value * {
+  return nullptr;
+}
 
-llvm::Value *Compiler::codgen(const Expr::Call &expr) { return nullptr; }
+auto Compiler::codegen(const Expr::Call &expr) -> llvm::Value * {
+  return nullptr;
+}
 
-llvm::Value *Compiler::codgen(const Expr::Get &expr) { return nullptr; }
+auto Compiler::codegen(const Expr::Get &expr) -> llvm::Value * {
+  return nullptr;
+}
 
-llvm::Value *Compiler::codgen(const Expr::Grouping &expr) { return nullptr; }
+auto Compiler::codegen(const Expr::Grouping &expr) -> llvm::Value * {
+  return nullptr;
+}
 
-llvm::Value *Compiler::codgen(const Expr::Literal &expr) { return nullptr; }
+auto Compiler::codegen(const Expr::Literal &expr) -> llvm::Value * {
+  return nullptr;
+}
 
-llvm::Value *Compiler::codgen(const Expr::Logical &expr) { return nullptr; }
+auto Compiler::codegen(const Expr::Logical &expr) -> llvm::Value * {
+  return nullptr;
+}
 
-llvm::Value *Compiler::codgen(const Expr::Set &expr) { return nullptr; }
+auto Compiler::codegen(const Expr::Set &expr) -> llvm::Value * {
+  return nullptr;
+}
 
-llvm::Value *Compiler::codgen(const Expr::This &expr) { return nullptr; }
+auto Compiler::codegen(const Expr::This &expr) -> llvm::Value * {
+  return nullptr;
+}
 
-llvm::Value *Compiler::codgen(const Expr::Unary &expr) { return nullptr; }
+auto Compiler::codegen(const Expr::Unary &expr) -> llvm::Value * {
+  return nullptr;
+}
 
-llvm::Value *Compiler::codgen(const Expr::Variable &expr) { return nullptr; }
+auto Compiler::codegen(const Expr::Variable &expr) -> llvm::Value * {
+  return nullptr;
+}
 
-llvm::Value *Compiler::codegen(const Stmt::Block &stmt) { return nullptr; }
+auto Compiler::codegen(const Stmt::Block &stmt) -> llvm::Value * {
+  return nullptr;
+}
 
-llvm::Value *Compiler::codegen(const Stmt::Break &stmt) { return nullptr; }
+auto Compiler::codegen(const Stmt::Break &stmt) -> llvm::Value * {
+  return nullptr;
+}
 
-llvm::Value *Compiler::codegen(const Stmt::Expression &stmt) { return nullptr; }
+auto Compiler::codegen(const Stmt::Expression &stmt) -> llvm::Value * {
+  return nullptr;
+}
 
-llvm::Value *Compiler::codegen(const Stmt::Function &stmt) { return nullptr; }
+auto Compiler::codegen(const Stmt::Function &stmt) -> llvm::Value * {
+  return nullptr;
+}
 
-llvm::Value *Compiler::codegen(const Stmt::If &stmt) { return nullptr; }
+auto Compiler::codegen(const Stmt::If &stmt) -> llvm::Value * {
+  return nullptr;
+}
 
-llvm::Value *Compiler::codegen(const Stmt::Print &stmt) { return nullptr; }
+auto Compiler::codegen(const Stmt::Print &stmt) -> llvm::Value * {
+  return nullptr;
+}
 
-llvm::Value *Compiler::codegen(const Stmt::Return &stmt) { return nullptr; }
+auto Compiler::codegen(const Stmt::Return &stmt) -> llvm::Value * {
+  return nullptr;
+}
 
-llvm::Value *Compiler::codegen(const Stmt::Var &stmt) { return nullptr; }
+auto Compiler::codegen(const Stmt::Var &stmt) -> llvm::Value * {
+  return nullptr;
+}
 
-llvm::Value *Compiler::codegen(const Stmt::While &stmt) { return nullptr; }
+auto Compiler::codegen(const Stmt::While &stmt) -> llvm::Value * {
+  return nullptr;
+}
