@@ -47,6 +47,8 @@ void error(Error type, const std::string args[]) {
       std::cout << " ";
     std::cout << "\033[1;31m^\033[0m" << std::endl;
     break;
+  default:
+    std::cout << "Unknown error!" << std::endl;
   }
   exit(1);
 }

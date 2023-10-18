@@ -7,6 +7,9 @@ enum class Error {
   UnterminatedString,
   UnterminatedComment,
   UnexpectedCharacter,
+  UnexpectedToken,
+  InvalidAssignmentTarget,
+  TooManyArguments,
 };
 
 void error(Error type, const std::string args[]);
