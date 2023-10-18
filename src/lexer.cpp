@@ -34,6 +34,19 @@ std::map<std::string_view, Token::Type> keywords = {
     {"skip", Token::Type::SKIP},     {"struct", Token::Type::STRUCT},
     {"true", Token::Type::TRUE},     {"while", Token::Type::WHILE}};
 
+Lexer::Lexer(std::string_view filename, std::string_view source)
+    : filename(filename), source(source) {
+  tokens = std::vector<Token>();
+}
+
+void Lexer::scanTokens() {
+  while (!isAtEnd()) {
+    start = current;
+    scanToken();
+  }
+  addToken(Token::Type::END, "EOF");
+}
+
 bool Lexer::isAtEnd() { return current >= source.size(); }
 
 char Lexer::advance() {
@@ -193,17 +206,4 @@ void Lexer::scanToken() {
     }
     break;
   }
-}
-
-Lexer::Lexer(std::string_view filename, std::string_view source)
-    : filename(filename), source(source) {
-  tokens = std::vector<Token>();
-}
-
-void Lexer::scanTokens() {
-  while (!isAtEnd()) {
-    start = current;
-    scanToken();
-  }
-  addToken(Token::Type::END, "EOF");
 }
