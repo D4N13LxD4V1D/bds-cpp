@@ -1,5 +1,5 @@
 #include <lexer.hpp>
-// #include <parser.hpp>
+#include <parser.hpp>
 #include <printer.hpp>
 
 #include <fstream>
@@ -22,11 +22,11 @@ int main(int argc, const char *argv[]) {
     Lexer lexer(argv[1], source);
     lexer.scanTokens();
 
-    // Parser parser(argv[1], lexer.tokens);
-    // parser.parseTokens();
+    Parser parser(argv[1], lexer.tokens);
+    parser.parseTokens();
 
-    // Printer printer;
-    // printer.print(parser.statements);
+    Printer printer;
+    printer.print(std::move(parser.statements));
   } else {
     std::cout << "Usage: bds [script]" << std::endl;
     exit(64);

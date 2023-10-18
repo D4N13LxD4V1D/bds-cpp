@@ -118,6 +118,8 @@ struct Expr {
   auto accept(auto &visitor) -> decltype(std::visit(visitor, expr)) {
     return std::visit(visitor, expr);
   }
+
+  template <class T> T *get() { return &std::get<T>(expr); }
 };
 
 #endif // EXPR_HPP
