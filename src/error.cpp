@@ -48,10 +48,14 @@ auto error(Error type, const std::string args[]) -> void {
     print(args[3], std::stoi(args[1]), std::stoi(args[2]), 1);
     break;
   case Error::UnexpectedToken:
-    std::cout << std::format("Unexpected token! Expected {} at {}:{}:{}!",
-                             args[4], args[0], args[1], args[2])
-              << std::endl;
-    print(args[4], std::stoi(args[1]), std::stoi(args[2]), 1);
+    std::cout << std::format("Unexpected token at {}:{}:{}!", args[0], args[1],
+                             args[2]);
+    if (args[4] != "") {
+      std::cout << std::format(" Expected {}!", args[3]);
+    }
+    std::cout << std::endl;
+    print(args[3], std::stoi(args[1]), std::stoi(args[2]), 1);
+    break;
   case Error::InvalidAssignment:
     std::cout << std::format("Invalid assignment at {}:{}:{}!", args[0],
                              args[1], args[2])
