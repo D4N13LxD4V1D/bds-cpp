@@ -1,4 +1,4 @@
-# bds
+# bds-cpp
 
 bds is a programming language inspired by C and Rust. It is a compiled language with a focus on performance and safety.
 
@@ -11,8 +11,8 @@ To build bds, you will need to have CMake 3.27.7 and Clang+LLVM 17.0.2. You can 
 Once you have installed Clang+LLVM and CMake, you can build bds by running the following commands:
 
 ```bash
-git clone 
-cd bds
+git clone https://github.com/D4N13LxD4V1D/bds-cpp.git
+cd bds-cpp
 mkdir build
 cd build
 cmake ..
