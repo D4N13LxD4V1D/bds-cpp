@@ -96,8 +96,8 @@ auto Lexer::getline(int n) -> std::string {
 }
 
 auto Lexer::addToken(Token::Type type, std::string_view lexeme) -> void {
-  tokens.push_back(Token(type, std::string{lexeme}, filename, getline(), row,
-                         column - lexeme.size()));
+  tokens.push_back(
+      Token(type, std::string{lexeme}, filename, getline(), row, column));
 }
 
 auto Lexer::scanToken() -> void {
