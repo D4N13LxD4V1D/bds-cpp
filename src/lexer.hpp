@@ -10,7 +10,7 @@
 #include <vector>
 
 class Lexer {
-  std::string_view filename;
+  std::string filename;
   std::string_view source;
   std::vector<Token> tokens;
 
@@ -29,7 +29,6 @@ class Lexer {
   auto scanToken() -> void;
 
 public:
-
   Lexer(std::string_view filename, std::string_view source);
 
   auto scanTokens() -> std::vector<Token>;

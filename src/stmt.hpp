@@ -35,10 +35,9 @@ struct Stmt {
   struct Function {
     Token name;
     std::vector<Token> params;
-    std::vector<std::unique_ptr<Stmt>> body;
+    std::unique_ptr<Stmt> body;
 
-    Function(Token name, std::vector<Token> params,
-             std::vector<std::unique_ptr<Stmt>> body)
+    Function(Token name, std::vector<Token> params, std::unique_ptr<Stmt> body)
         : name(std::move(name)), params(std::move(params)),
           body(std::move(body)) {}
   };

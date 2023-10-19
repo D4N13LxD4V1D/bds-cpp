@@ -70,8 +70,16 @@ struct Token {
   } type;
   std::string lexeme;
 
-  int row;
-  int column;
+  struct {
+    std::string filename;
+    std::string source;
+    int row;
+    int column;
+  } location;
+
+  Token(Type type, std::string lexeme, std::string filename, std::string source,
+        int row, int column)
+      : type(type), lexeme(lexeme), location({filename, source, row, column}) {}
 };
 
 #endif // TOKEN_HPP

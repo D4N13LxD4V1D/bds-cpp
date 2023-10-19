@@ -1,1 +1,5 @@
 let a = "a string"; /* this is a comment */
+
+fn main() {
+    print("Hello, world!");
+}

@@ -92,11 +92,8 @@ auto Printer::to_string(const Stmt::Function &stmt) -> std::string {
   for (const auto &param : stmt.params)
     params += param.lexeme + " ";
 
-  std::string body;
-  for (const auto &statement : stmt.body)
-    body += to_string(*statement) + " ";
-
-  return std::format("(function {} {} {})", stmt.name.lexeme, params, body);
+  return std::format("(function {} ({}) {})", stmt.name.lexeme, params,
+                     to_string(*stmt.body));
 }
 
 auto Printer::to_string(const Stmt::If &stmt) -> std::string {

@@ -4,19 +4,64 @@
 #include <algorithm>
 #include <format>
 #include <iostream>
+#include <map>
 #include <variant>
+
+std::map<Token::Type, std::string> expectedTokens = {
+    {Token::Type::LEFT_PAREN, "'('"},
+    {Token::Type::RIGHT_PAREN, "')'"},
+    {Token::Type::LEFT_BRACE, "'{'"},
+    {Token::Type::RIGHT_BRACE, "'}'"},
+    {Token::Type::COMMA, "','"},
+    {Token::Type::DOT, "'.'"},
+    {Token::Type::MINUS, "'-'"},
+    {Token::Type::PLUS, "'+'"},
+    {Token::Type::SEMICOLON, "';'"},
+    {Token::Type::SLASH, "'/'"},
+    {Token::Type::STAR, "'*'"},
+    {Token::Type::BANG, "'!'"},
+    {Token::Type::BANG_EQUAL, "'!='"},
+    {Token::Type::EQUAL, "'='"},
+    {Token::Type::EQUAL_EQUAL, "'=='"},
+    {Token::Type::GREATER, "'>'"},
+    {Token::Type::GREATER_EQUAL, "'>='"},
+    {Token::Type::LESS, "'<'"},
+    {Token::Type::LESS_EQUAL, "'<='"},
+    {Token::Type::AND, "'and'"},
+    {Token::Type::ELSE, "'else'"},
+    {Token::Type::FALSE, "'false'"},
+    {Token::Type::FOR, "'for'"},
+    {Token::Type::FN, "'fn'"},
+    {Token::Type::IF, "'if'"},
+    {Token::Type::LET, "'let'"},
+    {Token::Type::OR, "'or'"},
+    {Token::Type::PRINT, "'print'"},
+    {Token::Type::RETURN, "'return'"},
+    {Token::Type::TRUE, "'true'"},
+    {Token::Type::WHILE, "'while'"},
+    {Token::Type::IDENTIFIER, "identifier"},
+    {Token::Type::STRING, "string"},
+    {Token::Type::NUMBER, "number"},
+    {Token::Type::END, "end of file"}};
 
 Parser::Parser(std::string_view filename, std::vector<Token> tokens)
     : filename(filename), tokens(tokens) {}
 
 auto Parser::parseTokens() -> std::vector<std::unique_ptr<Stmt>> {
+  bool hadError = false;
   while (!isAtEnd()) {
     auto statement = declaration();
-    if (!statement)
-      error(statement.error(), {});
+    if (!statement) {
+      error(statement.error().type, statement.error().token,
+            statement.error().args);
+      hadError = true;
+    }
 
     statements.push_back(std::move(*statement));
   }
+
+  if (hadError)
+    exit(65);
 
   return std::move(statements);
 }
@@ -55,11 +100,12 @@ auto Parser::match(std::initializer_list<Token::Type> types) -> bool {
   return false;
 }
 
-auto Parser::consume(Token::Type type) -> std::expected<Token, Error> {
+auto Parser::consume(Token::Type type) -> std::expected<Token, ParseError> {
   if (check(type))
     return advance();
 
-  return std::unexpected(Error::UnexpectedToken);
+  return std::unexpected(
+      ParseError{Error::UnexpectedToken, peek(), {expectedTokens[type]}});
 }
 
 auto Parser::synchronize() -> void {
@@ -84,11 +130,11 @@ auto Parser::synchronize() -> void {
   }
 }
 
-auto Parser::expression() -> std::expected<std::unique_ptr<Expr>, Error> {
+auto Parser::expression() -> std::expected<std::unique_ptr<Expr>, ParseError> {
   return assignment();
 }
 
-auto Parser::assignment() -> std::expected<std::unique_ptr<Expr>, Error> {
+auto Parser::assignment() -> std::expected<std::unique_ptr<Expr>, ParseError> {
   auto expr = logicalOr();
   if (!expr)
     return std::unexpected(expr.error());
@@ -108,13 +154,13 @@ auto Parser::assignment() -> std::expected<std::unique_ptr<Expr>, Error> {
           Expr::Set(std::move(get->object), get->name, std::move(*value))));
     }
 
-    return std::unexpected(Error::UnexpectedToken);
+    return std::unexpected(ParseError{Error::InvalidAssignment, peek(), {}});
   }
 
   return expr;
 }
 
-auto Parser::logicalOr() -> std::expected<std::unique_ptr<Expr>, Error> {
+auto Parser::logicalOr() -> std::expected<std::unique_ptr<Expr>, ParseError> {
   auto expr = logicalAnd();
   if (!expr)
     return std::unexpected(expr.error());
@@ -132,7 +178,7 @@ auto Parser::logicalOr() -> std::expected<std::unique_ptr<Expr>, Error> {
   return expr;
 }
 
-auto Parser::logicalAnd() -> std::expected<std::unique_ptr<Expr>, Error> {
+auto Parser::logicalAnd() -> std::expected<std::unique_ptr<Expr>, ParseError> {
   auto expr = equality();
   if (!expr)
     return std::unexpected(expr.error());
@@ -150,7 +196,7 @@ auto Parser::logicalAnd() -> std::expected<std::unique_ptr<Expr>, Error> {
   return expr;
 }
 
-auto Parser::equality() -> std::expected<std::unique_ptr<Expr>, Error> {
+auto Parser::equality() -> std::expected<std::unique_ptr<Expr>, ParseError> {
   auto expr = comparison();
   if (!expr)
     return std::unexpected(expr.error());
@@ -168,7 +214,7 @@ auto Parser::equality() -> std::expected<std::unique_ptr<Expr>, Error> {
   return expr;
 }
 
-auto Parser::comparison() -> std::expected<std::unique_ptr<Expr>, Error> {
+auto Parser::comparison() -> std::expected<std::unique_ptr<Expr>, ParseError> {
   auto expr = addition();
   if (!expr)
     return std::unexpected(expr.error());
@@ -187,7 +233,7 @@ auto Parser::comparison() -> std::expected<std::unique_ptr<Expr>, Error> {
   return expr;
 }
 
-auto Parser::addition() -> std::expected<std::unique_ptr<Expr>, Error> {
+auto Parser::addition() -> std::expected<std::unique_ptr<Expr>, ParseError> {
   auto expr = multiplication();
   if (!expr)
     return std::unexpected(expr.error());
@@ -205,7 +251,8 @@ auto Parser::addition() -> std::expected<std::unique_ptr<Expr>, Error> {
   return expr;
 }
 
-auto Parser::multiplication() -> std::expected<std::unique_ptr<Expr>, Error> {
+auto Parser::multiplication()
+    -> std::expected<std::unique_ptr<Expr>, ParseError> {
   auto expr = unary();
   if (!expr)
     return std::unexpected(expr.error());
@@ -223,7 +270,7 @@ auto Parser::multiplication() -> std::expected<std::unique_ptr<Expr>, Error> {
   return expr;
 }
 
-auto Parser::unary() -> std::expected<std::unique_ptr<Expr>, Error> {
+auto Parser::unary() -> std::expected<std::unique_ptr<Expr>, ParseError> {
   if (match({Token::Type::BANG, Token::Type::MINUS})) {
     auto op = previous();
     auto right = unary();
@@ -237,7 +284,7 @@ auto Parser::unary() -> std::expected<std::unique_ptr<Expr>, Error> {
   return call();
 }
 
-auto Parser::call() -> std::expected<std::unique_ptr<Expr>, Error> {
+auto Parser::call() -> std::expected<std::unique_ptr<Expr>, ParseError> {
   auto expr = primary();
   if (!expr)
     return std::unexpected(expr.error());
@@ -254,15 +301,14 @@ auto Parser::call() -> std::expected<std::unique_ptr<Expr>, Error> {
 }
 
 auto Parser::finishCall(std::unique_ptr<Expr> callee)
-    -> std::expected<std::unique_ptr<Expr>, Error> {
+    -> std::expected<std::unique_ptr<Expr>, ParseError> {
   std::vector<std::unique_ptr<Expr>> arguments;
 
   if (!check(Token::Type::RIGHT_PAREN)) {
     do {
-      if (arguments.size() >= 255) {
-        std::string args[] = {};
-        error(Error::TooManyArguments, args);
-      }
+      if (arguments.size() >= 255)
+        return std::unexpected(ParseError{Error::TooManyArguments, peek(), {}});
+
       auto expr = expression();
       if (!expr)
         return std::unexpected(expr.error());
@@ -278,7 +324,7 @@ auto Parser::finishCall(std::unique_ptr<Expr> callee)
       Expr::Call(std::move(callee), std::move(*paren), std::move(arguments))));
 }
 
-auto Parser::primary() -> std::expected<std::unique_ptr<Expr>, Error> {
+auto Parser::primary() -> std::expected<std::unique_ptr<Expr>, ParseError> {
   if (match({Token::Type::FALSE}))
     return std::make_unique<Expr>(std::move(Expr::Literal(previous())));
   if (match({Token::Type::TRUE}))
@@ -304,10 +350,11 @@ auto Parser::primary() -> std::expected<std::unique_ptr<Expr>, Error> {
     return std::make_unique<Expr>(std::move(Expr::Grouping(std::move(*expr))));
   }
 
-  return std::unexpected(Error::UnexpectedToken);
+  return std::unexpected(
+      ParseError{Error::UnexpectedToken, peek(), {"primary expression"}});
 }
 
-auto Parser::declaration() -> std::expected<std::unique_ptr<Stmt>, Error> {
+auto Parser::declaration() -> std::expected<std::unique_ptr<Stmt>, ParseError> {
   if (match({Token::Type::FN})) {
     auto fn = function("function");
     if (!fn)
@@ -371,7 +418,8 @@ auto Parser::declaration() -> std::expected<std::unique_ptr<Stmt>, Error> {
   return exprStmt;
 }
 
-auto Parser::varDeclaration() -> std::expected<std::unique_ptr<Stmt>, Error> {
+auto Parser::varDeclaration()
+    -> std::expected<std::unique_ptr<Stmt>, ParseError> {
   auto name = consume(Token::Type::IDENTIFIER);
   if (!name)
     return std::unexpected(name.error());
@@ -394,7 +442,7 @@ auto Parser::varDeclaration() -> std::expected<std::unique_ptr<Stmt>, Error> {
       std::move(Stmt::Var(std::move(*name), std::move(initializer))));
 }
 
-auto Parser::statement() -> std::expected<std::unique_ptr<Stmt>, Error> {
+auto Parser::statement() -> std::expected<std::unique_ptr<Stmt>, ParseError> {
   if (match({Token::Type::PRINT}))
     return printStatement();
   if (match({Token::Type::LEFT_BRACE}))
@@ -413,7 +461,8 @@ auto Parser::statement() -> std::expected<std::unique_ptr<Stmt>, Error> {
   return expressionStatement();
 }
 
-auto Parser::printStatement() -> std::expected<std::unique_ptr<Stmt>, Error> {
+auto Parser::printStatement()
+    -> std::expected<std::unique_ptr<Stmt>, ParseError> {
   auto value = expression();
   if (!value)
     return std::unexpected(value.error());
@@ -426,7 +475,7 @@ auto Parser::printStatement() -> std::expected<std::unique_ptr<Stmt>, Error> {
 }
 
 auto Parser::expressionStatement()
-    -> std::expected<std::unique_ptr<Stmt>, Error> {
+    -> std::expected<std::unique_ptr<Stmt>, ParseError> {
   auto expr = expression();
   if (!expr)
     return std::unexpected(expr.error());
@@ -438,7 +487,7 @@ auto Parser::expressionStatement()
   return std::make_unique<Stmt>(std::move(Stmt::Expression(std::move(*expr))));
 }
 
-auto Parser::block() -> std::expected<std::unique_ptr<Stmt>, Error> {
+auto Parser::block() -> std::expected<std::unique_ptr<Stmt>, ParseError> {
   std::vector<std::unique_ptr<Stmt>> statements;
 
   while (!check(Token::Type::RIGHT_BRACE) && !isAtEnd()) {
@@ -456,7 +505,7 @@ auto Parser::block() -> std::expected<std::unique_ptr<Stmt>, Error> {
   return std::make_unique<Stmt>(std::move(Stmt::Block(std::move(statements))));
 }
 
-auto Parser::ifStatement() -> std::expected<std::unique_ptr<Stmt>, Error> {
+auto Parser::ifStatement() -> std::expected<std::unique_ptr<Stmt>, ParseError> {
   auto begin = consume(Token::Type::LEFT_PAREN);
   if (!begin)
     return std::unexpected(begin.error());
@@ -487,7 +536,8 @@ auto Parser::ifStatement() -> std::expected<std::unique_ptr<Stmt>, Error> {
       std::move(*condition), std::move(*thenBranch), std::move(elseBranch))));
 }
 
-auto Parser::whileStatement() -> std::expected<std::unique_ptr<Stmt>, Error> {
+auto Parser::whileStatement()
+    -> std::expected<std::unique_ptr<Stmt>, ParseError> {
   auto begin = consume(Token::Type::LEFT_PAREN);
   if (!begin)
     return std::unexpected(begin.error());
@@ -508,19 +558,54 @@ auto Parser::whileStatement() -> std::expected<std::unique_ptr<Stmt>, Error> {
       std::move(Stmt::While(std::move(*condition), std::move(*body))));
 }
 
-auto Parser::forStatement() -> std::expected<std::unique_ptr<Stmt>, Error> {
+auto Parser::forStatement()
+    -> std::expected<std::unique_ptr<Stmt>, ParseError> {
   return nullptr;
 }
 
-auto Parser::breakStatement() -> std::expected<std::unique_ptr<Stmt>, Error> {
+auto Parser::breakStatement()
+    -> std::expected<std::unique_ptr<Stmt>, ParseError> {
   return nullptr;
 }
 
 auto Parser::function(std::string kind)
-    -> std::expected<std::unique_ptr<Stmt>, Error> {
-  return nullptr;
+    -> std::expected<std::unique_ptr<Stmt>, ParseError> {
+  auto name = consume(Token::Type::IDENTIFIER);
+  if (!name)
+    return std::unexpected(name.error());
+
+  auto begin = consume(Token::Type::LEFT_PAREN);
+  if (!begin)
+    return std::unexpected(begin.error());
+
+  std::vector<Token> params;
+  if (!check(Token::Type::RIGHT_PAREN)) {
+    do {
+      if (params.size() >= 255)
+        return std::unexpected(
+            ParseError{Error::TooManyParameters, previous(), {}});
+
+      auto param = consume(Token::Type::IDENTIFIER);
+      if (!param)
+        return std::unexpected(param.error());
+
+      params.push_back(std::move(*param));
+    } while (match({Token::Type::COMMA}));
+  }
+
+  auto end = consume(Token::Type::RIGHT_PAREN);
+  if (!end)
+    return std::unexpected(end.error());
+
+  auto body = statement();
+  if (!body)
+    return std::unexpected(body.error());
+
+  return std::make_unique<Stmt>(std::move(
+      Stmt::Function(std::move(*name), std::move(params), std::move(*body))));
 }
 
-auto Parser::returnStatement() -> std::expected<std::unique_ptr<Stmt>, Error> {
+auto Parser::returnStatement()
+    -> std::expected<std::unique_ptr<Stmt>, ParseError> {
   return nullptr;
 }

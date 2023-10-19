@@ -96,7 +96,8 @@ auto Lexer::getline(int n) -> std::string {
 }
 
 auto Lexer::addToken(Token::Type type, std::string_view lexeme) -> void {
-  tokens.push_back(Token{type, std::string{lexeme}, row, column});
+  tokens.push_back(Token(type, std::string{lexeme}, filename, getline(), row,
+                         column - lexeme.size()));
 }
 
 auto Lexer::scanToken() -> void {
@@ -143,7 +144,7 @@ auto Lexer::scanToken() -> void {
         }
         advance();
         if (isAtEnd()) {
-          std::string args[] = {std::string{filename}, std::to_string(oldRow),
+          std::string args[] = {filename, std::to_string(oldRow),
                                 std::to_string(oldColumn), getline(oldRow)};
           error(Error::UnterminatedComment, args);
         }
@@ -192,7 +193,7 @@ auto Lexer::scanToken() -> void {
       }
 
       if (isAtEnd()) {
-        std::string args[] = {std::string{filename}, std::to_string(oldRow),
+        std::string args[] = {filename, std::to_string(oldRow),
                               std::to_string(oldColumn), getline(oldRow)};
         error(Error::UnterminatedString, args);
       }
@@ -202,7 +203,7 @@ auto Lexer::scanToken() -> void {
       std::string_view text = source.substr(start + 1, current - start - 2);
       addToken(Token::Type::STRING, text);
     } else {
-      std::string args[] = {std::string{filename}, std::to_string(row),
+      std::string args[] = {filename, std::to_string(row),
                             std::to_string(column), getline()};
       error(Error::UnexpectedCharacter, args);
     }
