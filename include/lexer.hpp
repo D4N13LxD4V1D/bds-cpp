@@ -27,12 +27,12 @@ class Lexer {
   auto getline() -> std::string;
   auto getline(int n) -> std::string;
   auto newToken(Token::Type type, std::string_view lexeme) -> Token;
-  auto scanToken() -> std::expected<std::optional<Token>, ParseError>;
+  auto scanToken() -> std::expected<std::optional<Token>, Error>;
 
 public:
   Lexer(std::string_view filename, std::string_view source);
 
-  auto scanTokens() -> std::expected<std::vector<Token>, ParseError>;
+  auto scanTokens() -> std::expected<std::vector<Token>, Error>;
 };
 
 #endif // LEXER_HPP

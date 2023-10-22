@@ -39,7 +39,7 @@ Lexer::Lexer(std::string_view filename, std::string_view source)
   tokens = std::vector<Token>();
 }
 
-auto Lexer::scanTokens() -> std::expected<std::vector<Token>, ParseError> {
+auto Lexer::scanTokens() -> std::expected<std::vector<Token>, Error> {
   while (!isAtEnd()) {
     start = current;
     auto token = scanToken();
@@ -104,7 +104,7 @@ auto Lexer::newToken(Token::Type type, std::string_view lexeme) -> Token {
   return Token(type, std::string{lexeme}, filename, getline(), row, column);
 }
 
-auto Lexer::scanToken() -> std::expected<std::optional<Token>, ParseError> {
+auto Lexer::scanToken() -> std::expected<std::optional<Token>, Error> {
   std::string possibleDoubleToken{peek(), peekNext()};
   if (doubleTokens.find(possibleDoubleToken) != doubleTokens.end()) {
     current += 2;
@@ -146,8 +146,7 @@ auto Lexer::scanToken() -> std::expected<std::optional<Token>, ParseError> {
         }
         advance();
         if (isAtEnd()) {
-          return std::unexpected(
-              ParseError(Error::UnterminatedComment, token, {}));
+          return std::unexpected(Error(Error::UnterminatedComment, token, {}));
         }
       }
     } break;
@@ -190,8 +189,7 @@ auto Lexer::scanToken() -> std::expected<std::optional<Token>, ParseError> {
 
       while (peek() != '"') {
         if (isAtEnd())
-          return std::unexpected(
-              ParseError(Error::UnterminatedString, token, {}));
+          return std::unexpected(Error(Error::UnterminatedString, token, {}));
 
         if (peek() == '\n') {
           row++;

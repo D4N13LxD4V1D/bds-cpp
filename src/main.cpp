@@ -11,7 +11,7 @@ auto main(int argc, const char *argv[]) -> int {
     std::ifstream file(filename);
     if (!file.is_open()) {
       std::cout << "Could not open file " << filename << std::endl;
-      exit(64);
+      return 1;
     }
 
     std::string source{std::istreambuf_iterator<char>(file),
@@ -19,18 +19,24 @@ auto main(int argc, const char *argv[]) -> int {
 
     Lexer lexer(filename, source);
     auto tokens = lexer.scanTokens();
-    if (!tokens)
-      error(tokens.error());
+    if (!tokens) {
+      tokens.error().print();
+      return 1;
+    }
 
     Parser parser(filename, *tokens);
     auto statements = parser.parseTokens();
-    if (!statements)
-      error(statements.error());
+    if (!statements) {
+      statements.error().print();
+      return 1;
+    }
 
     Printer printer;
     printer.print(std::move(*statements));
   } else {
     std::cout << "Usage: bds [script]" << std::endl;
-    exit(64);
+    return 1;
   }
+
+  return 0;
 }

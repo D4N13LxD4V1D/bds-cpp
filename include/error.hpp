@@ -6,22 +6,20 @@
 #include <string>
 #include <vector>
 
-enum class Error {
-  UnterminatedString,
-  UnterminatedComment,
-  UnexpectedCharacter,
-  UnexpectedToken,
-  InvalidAssignment,
-  TooManyArguments,
-  TooManyParameters,
-};
-
-struct ParseError {
-  Error type;
+struct Error {
+  enum Type {
+    UnterminatedString,
+    UnterminatedComment,
+    UnexpectedCharacter,
+    UnexpectedToken,
+    InvalidAssignment,
+    TooManyArguments,
+    TooManyParameters,
+  } type;
   Token token;
   std::vector<std::string> args;
-};
 
-auto error(ParseError e) -> void;
+  auto print() -> void;
+};
 
 #endif // ERROR_HPP
