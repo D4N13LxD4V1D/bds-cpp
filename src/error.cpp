@@ -1,10 +1,6 @@
 #include <error.hpp>
 
-#include <algorithm>
-#include <format>
-#include <iostream>
 #include <map>
-#include <vector>
 
 const std::map<Error, std::string> errorMessages = {
     {Error::UnterminatedString, "Unterminated string"},
@@ -19,13 +15,13 @@ const std::map<Error, std::string> errorMessages = {
 auto error(ParseError e) -> void {
   auto [type, token, args] = e;
   auto [filename, source, row, column] = token.location;
-  std::cout << "\033[1;31mError:\033[0m " << errorMessages.at(type) << " at "
-            << filename << ":" << row << ":" << column << "!";
+  printf("\033[1;31mError:\033[0m %s st %s:%d:%d!",
+         errorMessages.at(type).data(), filename.data(), row, column);
 
   for (auto arg : args)
-    std::cout << " " << arg;
+    printf(" %s", arg.data());
 
-  std::cout << std::endl;
+  printf("\n");
 
   int n = printf("%4d ", row);
   printf("|    %s\n%*s|%4s", source.data(), n, "", "");
