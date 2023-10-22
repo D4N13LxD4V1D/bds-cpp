@@ -5,7 +5,6 @@
 #include <stmt.hpp>
 
 #include <memory>
-#include <variant>
 #include <vector>
 
 struct Printer {
