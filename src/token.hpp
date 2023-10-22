@@ -18,6 +18,7 @@ struct Token {
     DOT,
     MINUS,
     PLUS,
+    QUOTE,
     SEMICOLON,
     COLON,
     SLASH,
@@ -65,7 +66,8 @@ struct Token {
     TRUE,
     WHILE,
 
-    // End of file
+    // Special tokens
+    ERROR,
     END
   } type;
   std::string lexeme;
