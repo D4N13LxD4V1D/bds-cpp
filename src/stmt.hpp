@@ -88,15 +88,7 @@ struct Stmt {
                While>
       stmt;
 
-  Stmt(Block stmt) : stmt(std::move(stmt)) {}
-  Stmt(Break stmt) : stmt(std::move(stmt)) {}
-  Stmt(Expression stmt) : stmt(std::move(stmt)) {}
-  Stmt(Function stmt) : stmt(std::move(stmt)) {}
-  Stmt(If stmt) : stmt(std::move(stmt)) {}
-  Stmt(Print stmt) : stmt(std::move(stmt)) {}
-  Stmt(Return stmt) : stmt(std::move(stmt)) {}
-  Stmt(Var stmt) : stmt(std::move(stmt)) {}
-  Stmt(While stmt) : stmt(std::move(stmt)) {}
+  template <typename T> Stmt(T &&stmt) : stmt(std::forward<T>(stmt)) {}
 
   auto accept(const auto &visitor) const
       -> decltype(std::visit(visitor, stmt)) {
