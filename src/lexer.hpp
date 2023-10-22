@@ -4,7 +4,8 @@
 #include <error.hpp>
 #include <token.hpp>
 
-#include <iostream>
+#include <expected>
+#include <optional>
 #include <string>
 #include <string_view>
 #include <vector>
@@ -25,13 +26,13 @@ class Lexer {
   auto peekNext() -> char;
   auto getline() -> std::string;
   auto getline(int n) -> std::string;
-  auto addToken(Token::Type type, std::string_view lexeme) -> void;
-  auto scanToken() -> void;
+  auto newToken(Token::Type type, std::string_view lexeme) -> Token;
+  auto scanToken() -> std::expected<std::optional<Token>, ParseError>;
 
 public:
   Lexer(std::string_view filename, std::string_view source);
 
-  auto scanTokens() -> std::vector<Token>;
+  auto scanTokens() -> std::expected<std::vector<Token>, ParseError>;
 };
 
 #endif // LEXER_HPP

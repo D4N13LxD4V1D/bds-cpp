@@ -1,8 +1,10 @@
 #ifndef ERROR_HPP
 #define ERROR_HPP
 
-#include <string>
 #include <token.hpp>
+
+#include <string>
+#include <vector>
 
 enum class Error {
   UnterminatedString,
@@ -14,7 +16,12 @@ enum class Error {
   TooManyParameters,
 };
 
-auto error(Error type, const std::string args[]) -> void;
-auto error(Error type, Token token, std::vector<std::string> args) -> void;
+struct ParseError {
+  Error type;
+  Token token;
+  std::vector<std::string> args;
+};
+
+auto error(ParseError e) -> void;
 
 #endif // ERROR_HPP

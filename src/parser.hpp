@@ -11,12 +11,6 @@
 #include <string_view>
 #include <vector>
 
-struct ParseError {
-  Error type;
-  Token token;
-  std::vector<std::string> args;
-};
-
 class Parser {
   std::string filename;
   std::vector<Token> tokens;
@@ -66,7 +60,8 @@ class Parser {
 public:
   Parser(std::string_view filename, std::vector<Token> tokens);
 
-  auto parseTokens() -> std::vector<std::unique_ptr<Stmt>>;
+  auto parseTokens()
+      -> std::expected<std::vector<std::unique_ptr<Stmt>>, ParseError>;
 };
 
 #endif // PARSER_HPP

@@ -47,21 +47,15 @@ std::map<Token::Type, std::string> expectedTokens = {
 Parser::Parser(std::string_view filename, std::vector<Token> tokens)
     : filename(filename), tokens(tokens) {}
 
-auto Parser::parseTokens() -> std::vector<std::unique_ptr<Stmt>> {
-  bool hadError = false;
+auto Parser::parseTokens()
+    -> std::expected<std::vector<std::unique_ptr<Stmt>>, ParseError> {
   while (!isAtEnd()) {
     auto statement = declaration();
-    if (!statement) {
-      error(statement.error().type, statement.error().token,
-            statement.error().args);
-      hadError = true;
-    }
+    if (!statement)
+      return std::unexpected(statement.error());
 
     statements.push_back(std::move(*statement));
   }
-
-  if (hadError)
-    exit(65);
 
   return std::move(statements);
 }

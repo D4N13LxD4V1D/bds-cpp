@@ -39,12 +39,17 @@ Lexer::Lexer(std::string_view filename, std::string_view source)
   tokens = std::vector<Token>();
 }
 
-auto Lexer::scanTokens() -> std::vector<Token> {
+auto Lexer::scanTokens() -> std::expected<std::vector<Token>, ParseError> {
   while (!isAtEnd()) {
     start = current;
-    scanToken();
+    auto token = scanToken();
+    if (!token)
+      return std::unexpected(token.error());
+
+    if (*token)
+      tokens.push_back(**token);
   }
-  addToken(Token::Type::END, "EOF");
+  tokens.push_back(newToken(Token::Type::END, ""));
 
   return tokens;
 }
@@ -95,17 +100,15 @@ auto Lexer::getline(int n) -> std::string {
   return std::string{source.substr(start, end - start)};
 }
 
-auto Lexer::addToken(Token::Type type, std::string_view lexeme) -> void {
-  tokens.push_back(
-      Token(type, std::string{lexeme}, filename, getline(), row, column));
+auto Lexer::newToken(Token::Type type, std::string_view lexeme) -> Token {
+  return Token(type, std::string{lexeme}, filename, getline(), row, column);
 }
 
-auto Lexer::scanToken() -> void {
+auto Lexer::scanToken() -> std::expected<std::optional<Token>, ParseError> {
   std::string possibleDoubleToken{peek(), peekNext()};
   if (doubleTokens.find(possibleDoubleToken) != doubleTokens.end()) {
     current += 2;
-    addToken(doubleTokens[possibleDoubleToken], possibleDoubleToken);
-    return;
+    return newToken(doubleTokens[possibleDoubleToken], possibleDoubleToken);
   }
 
   char c = advance();
@@ -129,8 +132,7 @@ auto Lexer::scanToken() -> void {
         advance();
       break;
     case '*': {
-      int oldRow = row;
-      int oldColumn = column;
+      auto token = newToken(Token::Type::SLASH, "");
 
       while (!isAtEnd()) {
         if (peek() == '\n') {
@@ -144,31 +146,32 @@ auto Lexer::scanToken() -> void {
         }
         advance();
         if (isAtEnd()) {
-          std::string args[] = {filename, std::to_string(oldRow),
-                                std::to_string(oldColumn), getline(oldRow)};
-          error(Error::UnterminatedComment, args);
+          return std::unexpected(
+              ParseError(Error::UnterminatedComment, token, {}));
         }
       }
     } break;
     default:
-      addToken(Token::Type::SLASH, "/");
+      return newToken(Token::Type::SLASH, "");
       break;
     }
   } break;
   default:
-    if (singleTokens.find(c) != singleTokens.end()) {
-      addToken(singleTokens[c], std::string{1, c});
-    } else if (isalpha(c) || c == '_') {
+    if (singleTokens.find(c) != singleTokens.end())
+      return newToken(singleTokens[c], std::string{c});
+
+    if (isalpha(c) || c == '_') {
       while (isalpha(peek()) || isdigit(peek()) || peek() == '_')
         advance();
 
       std::string_view text = source.substr(start, current - start);
-      if (keywords.find(text) != keywords.end()) {
-        addToken(keywords[text], text);
-      } else {
-        addToken(Token::Type::IDENTIFIER, text);
-      }
-    } else if (isdigit(c)) {
+      if (keywords.find(text) != keywords.end())
+        return newToken(keywords[text], text);
+
+      return newToken(Token::Type::IDENTIFIER, text);
+    }
+
+    if (isdigit(c)) {
       while (isdigit(peek()))
         advance();
 
@@ -179,12 +182,17 @@ auto Lexer::scanToken() -> void {
       }
 
       std::string_view text = source.substr(start, current - start);
-      addToken(Token::Type::NUMBER, text);
-    } else if (c == '"') {
-      int oldRow = row;
-      int oldColumn = column;
+      return newToken(Token::Type::NUMBER, text);
+    }
 
-      while (peek() != '"' && !isAtEnd()) {
+    if (c == '"') {
+      auto token = newToken(Token::Type::QUOTE, std::string{c});
+
+      while (peek() != '"') {
+        if (isAtEnd())
+          return std::unexpected(
+              ParseError(Error::UnterminatedString, token, {}));
+
         if (peek() == '\n') {
           row++;
           column = 1;
@@ -192,21 +200,13 @@ auto Lexer::scanToken() -> void {
         advance();
       }
 
-      if (isAtEnd()) {
-        std::string args[] = {filename, std::to_string(oldRow),
-                              std::to_string(oldColumn), getline(oldRow)};
-        error(Error::UnterminatedString, args);
-      }
-
       advance();
 
       std::string_view text = source.substr(start + 1, current - start - 2);
-      addToken(Token::Type::STRING, text);
-    } else {
-      std::string args[] = {filename, std::to_string(row),
-                            std::to_string(column), getline()};
-      error(Error::UnexpectedCharacter, args);
+      return newToken(Token::Type::STRING, text);
     }
     break;
   }
+
+  return std::nullopt;
 }
